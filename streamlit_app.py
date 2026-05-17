@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import time
+import requests
 from dotenv import load_dotenv
 from app.agent import RecommendationAgent
 from app.retriever import HybridRetriever
@@ -16,6 +17,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Backend API Configuration
+BACKEND_URL = os.getenv("BACKEND_URL", "https://winshaurya1-shl-assessment-api.hf.space")
 
 # Advanced Responsive CSS
 st.markdown("""
@@ -119,37 +123,32 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize Resources
+# Initialize Local Fallback Resources
 @st.cache_resource
-def get_retriever():
+def get_local_retriever():
     retriever = HybridRetriever()
     retriever.load_or_build()
     return retriever
 
 @st.cache_resource
-def get_agent():
-    retriever = get_retriever()
+def get_local_agent():
+    retriever = get_local_retriever()
     return RecommendationAgent(retriever=retriever)
-
-try:
-    agent = get_agent()
-except Exception as e:
-    st.error(f"Error loading retriever catalog resources: {e}")
-    st.stop()
 
 # Sidebar Configuration & Profile Bio Card
 with st.sidebar:
     st.image("https://img.shields.io/badge/SHL--Labs-AI--Intern--Assignment-indigo?style=for-the-badge", use_column_width=False)
     st.markdown("<h2 style='color: #38bdf8; font-size: 1.3rem; margin-top: 1rem; margin-bottom: 0.5rem;'>Settings & Configuration</h2>", unsafe_allow_html=True)
     
+    # Connection Mode Display
+    st.markdown(f"<div style='font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.5rem;'>Backend Host: <code style='color: #38bdf8;'>{BACKEND_URL}</code></div>", unsafe_allow_html=True)
+    
     # API Status Indicators with clean SVGs
     gemini_key = os.getenv("GEMINI_API_KEY")
     if gemini_key:
         st.markdown("<div style='font-size: 0.9rem; color: #f1f5f9; padding: 0.4rem 0.6rem; background: rgba(34, 197, 94, 0.15); border-left: 3px solid #22c55e; margin-bottom: 0.5rem; border-radius: 2px;'><svg width='8' height='8' style='vertical-align: middle; margin-right: 6px; margin-bottom: 2px;'><circle cx='4' cy='4' r='4' fill='#22c55e'/></svg>Gemini API Key Detected</div>", unsafe_allow_html=True)
-        st.caption(f"Model: `{os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')}`")
     else:
-        st.markdown("<div style='font-size: 0.9rem; color: #f1f5f9; padding: 0.4rem 0.6rem; background: rgba(234, 179, 8, 0.15); border-left: 3px solid #eab308; margin-bottom: 0.5rem; border-radius: 2px;'><svg width='8' height='8' style='vertical-align: middle; margin-right: 6px; margin-bottom: 2px;'><circle cx='4' cy='4' r='4' fill='#eab308'/></svg>Using Rule-Based Fallback</div>", unsafe_allow_html=True)
-        st.info("To enable advanced reasoning, add `GEMINI_API_KEY` to your environment or `.env` file.")
+        st.markdown("<div style='font-size: 0.9rem; color: #f1f5f9; padding: 0.4rem 0.6rem; background: rgba(234, 179, 8, 0.15); border-left: 3px solid #eab308; margin-bottom: 0.5rem; border-radius: 2px;'><svg width='8' height='8' style='vertical-align: middle; margin-right: 6px; margin-bottom: 2px;'><circle cx='4' cy='4' r='4' fill='#eab308'/></svg>Using Local Reasoning</div>", unsafe_allow_html=True)
         
     st.markdown("---")
     
@@ -168,7 +167,6 @@ with st.sidebar:
     st.markdown("---")
     
     # Control Actions with custom trash/clear SVG
-    clear_label_html = "<span style='display: flex; align-items: center; justify-content: center; gap: 0.4rem;'><svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align: middle;'><path d='M3 6h18'/><path d='M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6'/><path d='M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2'/></svg>Clear Chat History</span>"
     if st.button("Clear Chat History", key="clear_chat_button", type="secondary", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
@@ -208,6 +206,58 @@ st.markdown("<p class='gradient-subtext'>An intelligent RAG system that matches 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# Hybrid API and Local Fallback Request Executor
+def execute_chat_query(api_messages):
+    # Prepare payload
+    payload = {
+        "messages": [
+            {"role": m.role.value, "content": m.content}
+            for m in api_messages
+        ]
+    }
+    
+    # 1. Attempt API request to Hugging Face FastAPI backend
+    try:
+        response = requests.post(
+            f"{BACKEND_URL}/chat",
+            json=payload,
+            timeout=8.0 # High responsiveness boundary
+        )
+        if response.status_code == 200:
+            data = response.json()
+            # Parse into a duck-typed response matching local structure
+            class APIResponse:
+                def __init__(self, reply, recommendations, end_of_conversation):
+                    self.reply = reply
+                    self.end_of_conversation = end_of_conversation
+                    # Map dict recommendations back to model objects
+                    class Rec:
+                        def __init__(self, name, url, test_type):
+                            self.name = name
+                            self.url = url
+                            self.test_type = test_type
+                        def model_dump(self):
+                            return {"name": self.name, "url": self.url, "test_type": self.test_type}
+                    
+                    self.recommendations = [
+                        Rec(r["name"], r["url"], r["test_type"])
+                        for r in recommendations
+                    ]
+            
+            return APIResponse(
+                data["reply"],
+                data["recommendations"],
+                data.get("end_of_conversation", False)
+            )
+            
+    except Exception as e:
+        # Gracefully log API disruption and activate local fallback
+        pass
+
+    # 2. Local Fallback Route (Zero-latency Python execution)
+    local_agent = get_local_agent()
+    return local_agent.respond(api_messages)
+
 # Grounded Multi-Step Progress Rendering Flow with clean status dot SVGs
 def run_agent_with_progress(api_messages):
     progress_placeholder = st.empty()
@@ -221,7 +271,7 @@ def run_agent_with_progress(api_messages):
         <div class="progress-step" style="opacity: 0.4;"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#64748b"/></svg> <b>Phase 3:</b> Generating grounded assessment shortlist...</div>
     </div>
     """, unsafe_allow_html=True)
-    time.sleep(0.5)
+    time.sleep(0.4)
 
     # Step 2 Animation
     progress_placeholder.markdown("""
@@ -232,10 +282,10 @@ def run_agent_with_progress(api_messages):
         <div class="progress-step" style="opacity: 0.4;"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#64748b"/></svg> <b>Phase 3:</b> Generating grounded assessment shortlist...</div>
     </div>
     """, unsafe_allow_html=True)
-    time.sleep(0.5)
+    time.sleep(0.4)
 
-    # Call agent respond
-    agent_res = agent.respond(api_messages)
+    # Execute Hybrid query
+    agent_res = execute_chat_query(api_messages)
 
     # Step 3 Animation
     progress_placeholder.markdown("""
@@ -246,7 +296,7 @@ def run_agent_with_progress(api_messages):
         <div class="progress-step"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#3b82f6"/></svg> <b>Phase 3:</b> Grounding outputs and generating final synthesis...</div>
     </div>
     """, unsafe_allow_html=True)
-    time.sleep(0.4)
+    time.sleep(0.3)
     
     # Clean up progress bar
     progress_placeholder.empty()
