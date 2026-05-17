@@ -12,7 +12,7 @@ load_dotenv()
 # App Configuration & Responsive Layout Setup
 st.set_page_config(
     page_title="SHL Assessment Recommendation Agent",
-    page_icon="🔍",
+    page_icon="S",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -43,11 +43,11 @@ st.markdown("""
         margin-bottom: 1.5rem;
     }
     
-    /* Responsive Assessment Recommendation Cards */
+    /* Responsive Assessment Recommendation Cards with very small rounded corners */
     .assessment-card {
         background: rgba(30, 41, 59, 0.7);
         border: 1px solid rgba(148, 163, 184, 0.15);
-        border-radius: 12px;
+        border-radius: 4px;
         padding: 1.2rem;
         margin: 0.6rem 0;
         transition: all 0.25s ease;
@@ -74,17 +74,17 @@ st.markdown("""
         background-color: rgba(99, 102, 241, 0.25);
         color: #a5b4fc;
         padding: 0.2rem 0.6rem;
-        border-radius: 9999px;
+        border-radius: 2px;
         font-size: 0.7rem;
         font-weight: 600;
         margin-bottom: 0.6rem;
     }
     
-    /* Advanced progress and step pipeline card */
+    /* Advanced progress and step pipeline card with very small rounded corners */
     .progress-pipeline {
         background: rgba(30, 41, 59, 0.4);
         border-left: 4px solid #6366f1;
-        border-radius: 4px 12px 12px 4px;
+        border-radius: 2px 4px 4px 2px;
         padding: 1rem;
         margin: 1rem 0;
     }
@@ -112,7 +112,6 @@ st.markdown("""
         .assessment-title {
             font-size: 1rem;
         }
-        /* Tighten margins for smaller mobile viewports */
         .stApp {
             padding: 0.5rem;
         }
@@ -143,19 +142,19 @@ with st.sidebar:
     st.image("https://img.shields.io/badge/SHL--Labs-AI--Intern--Assignment-indigo?style=for-the-badge", use_column_width=False)
     st.markdown("<h2 style='color: #38bdf8; font-size: 1.3rem; margin-top: 1rem; margin-bottom: 0.5rem;'>Settings & Configuration</h2>", unsafe_allow_html=True)
     
-    # API Status Indicators
+    # API Status Indicators with clean SVGs
     gemini_key = os.getenv("GEMINI_API_KEY")
     if gemini_key:
-        st.success("🟢 Gemini API Key Detected")
+        st.markdown("<div style='font-size: 0.9rem; color: #f1f5f9; padding: 0.4rem 0.6rem; background: rgba(34, 197, 94, 0.15); border-left: 3px solid #22c55e; margin-bottom: 0.5rem; border-radius: 2px;'><svg width='8' height='8' style='vertical-align: middle; margin-right: 6px; margin-bottom: 2px;'><circle cx='4' cy='4' r='4' fill='#22c55e'/></svg>Gemini API Key Detected</div>", unsafe_allow_html=True)
         st.caption(f"Model: `{os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')}`")
     else:
-        st.warning("🟡 Using Rule-Based Fallback")
+        st.markdown("<div style='font-size: 0.9rem; color: #f1f5f9; padding: 0.4rem 0.6rem; background: rgba(234, 179, 8, 0.15); border-left: 3px solid #eab308; margin-bottom: 0.5rem; border-radius: 2px;'><svg width='8' height='8' style='vertical-align: middle; margin-right: 6px; margin-bottom: 2px;'><circle cx='4' cy='4' r='4' fill='#eab308'/></svg>Using Rule-Based Fallback</div>", unsafe_allow_html=True)
         st.info("To enable advanced reasoning, add `GEMINI_API_KEY` to your environment or `.env` file.")
         
     st.markdown("---")
     
-    # Quick Sample Queries
-    st.markdown("<h3 style='font-size: 1rem; color: #a5b4fc; margin-bottom: 0.5rem;'>💡 Quick-Start Templates</h3>", unsafe_allow_html=True)
+    # Quick Sample Queries with custom lightbulb SVG
+    st.markdown("<h3 style='font-size: 1rem; color: #a5b4fc; margin-bottom: 0.5rem;'><svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='#a5b4fc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align: middle; margin-right: 6px; margin-bottom: 2px;'><path d='M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5.5 5.5 0 0 0 12.5 2.5a5.5 5.5 0 0 0-5 5.5c0 1.3.5 2.6 1.5 3.5.7.8 1.3 1.5 1.5 2.5'/><path d='M9 18h6'/><path d='M10 22h4'/></svg>Quick-Start Templates</h3>", unsafe_allow_html=True)
     sample_queries = [
         "Need technical & personality assessments for a junior Java backend engineer.",
         "What aptitude/reasoning tests do you have for executive management hiring?",
@@ -168,53 +167,58 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # Control Actions
-    if st.button("🧹 Clear Chat History", type="secondary", use_container_width=True):
+    # Control Actions with custom trash/clear SVG
+    clear_label_html = "<span style='display: flex; align-items: center; justify-content: center; gap: 0.4rem;'><svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align: middle;'><path d='M3 6h18'/><path d='M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6'/><path d='M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2'/></svg>Clear Chat History</span>"
+    if st.button("Clear Chat History", key="clear_chat_button", type="secondary", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
-    # Premium Responsive Profile Card
+    # Premium Profile Card with very small rounded corners and custom professional SVGs
     profile_html = """
-    <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; padding: 1rem; margin-top: 1.5rem;">
-        <h4 style="color: #38bdf8; font-size: 0.95rem; margin: 0 0 0.4rem 0; font-weight: 700; display: flex; align-items: center; gap: 0.3rem;">
-            ⚙️ AI Engineer Profile
+    <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 4px; padding: 1rem; margin-top: 1.5rem;">
+        <h4 style="color: #38bdf8; font-size: 0.95rem; margin: 0 0 0.4rem 0; font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            AI Engineer Profile
         </h4>
         <div style="font-size: 1.05rem; font-weight: 600; color: #f1f5f9; line-height: 1.2;">Shaurya Mishra</div>
         <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.8rem;">AI Engineering Candidate</div>
         <div style="display: flex; flex-direction: column; gap: 0.5rem; border-top: 1px solid rgba(148, 163, 184, 0.1); padding-top: 0.6rem;">
             <a href="https://github.com/winshaurya" target="_blank" style="text-decoration: none; color: #a5b4fc; font-size: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
-                🐙 <b>GitHub:</b> @winshaurya
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                <b>GitHub:</b> @winshaurya
             </a>
             <a href="https://www.linkedin.com/in/shaurya-mishra-win" target="_blank" style="text-decoration: none; color: #a5b4fc; font-size: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
-                💼 <b>LinkedIn:</b> shaurya-mishra-win
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                <b>LinkedIn:</b> shaurya-mishra-win
             </a>
             <a href="mailto:p.shauryamishra@gmail.com" style="text-decoration: none; color: #a5b4fc; font-size: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
-                📧 <b>Email:</b> p.shauryamishra@gmail.com
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <b>Email:</b> p.shauryamishra@gmail.com
             </a>
         </div>
     </div>
     """
     st.markdown(profile_html, unsafe_allow_html=True)
 
-# Main Application Panel
-st.markdown("<h1 class='gradient-text'>🔍 Conversational SHL Assessment Recommender</h1>", unsafe_allow_html=True)
+# Main Application Panel - No emojis
+st.markdown("<h1 class='gradient-text'>Conversational SHL Assessment Recommender</h1>", unsafe_allow_html=True)
 st.markdown("<p class='gradient-subtext'>An intelligent RAG system that matches and retrieves official SHL assessments based on your exact recruitment specifications.</p>", unsafe_allow_html=True)
 
 # Session State Initialization
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Grounded Multi-Step Progress Rendering Flow
+# Grounded Multi-Step Progress Rendering Flow with clean status dot SVGs
 def run_agent_with_progress(api_messages):
     progress_placeholder = st.empty()
     
     # Step 1 Animation
     progress_placeholder.markdown("""
     <div class="progress-pipeline">
-        <div style="font-weight: 700; color: #a5b4fc; margin-bottom: 0.5rem;">🧠 Agentic RAG Context Flow</div>
-        <div class="progress-step">🔵 <b>Phase 1:</b> Analyzing conversational intent & safety parameters...</div>
-        <div class="progress-step" style="opacity: 0.4;">⚪ <b>Phase 2:</b> Searching Hybrid FAISS index database...</div>
-        <div class="progress-step" style="opacity: 0.4;">⚪ <b>Phase 3:</b> Generating grounded assessment shortlist...</div>
+        <div style="font-weight: 700; color: #a5b4fc; margin-bottom: 0.5rem;">Agentic RAG Context Flow</div>
+        <div class="progress-step"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#3b82f6"/></svg> <b>Phase 1:</b> Analyzing conversational intent and safety parameters...</div>
+        <div class="progress-step" style="opacity: 0.4;"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#64748b"/></svg> <b>Phase 2:</b> Searching Hybrid FAISS index database...</div>
+        <div class="progress-step" style="opacity: 0.4;"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#64748b"/></svg> <b>Phase 3:</b> Generating grounded assessment shortlist...</div>
     </div>
     """, unsafe_allow_html=True)
     time.sleep(0.5)
@@ -222,10 +226,10 @@ def run_agent_with_progress(api_messages):
     # Step 2 Animation
     progress_placeholder.markdown("""
     <div class="progress-pipeline">
-        <div style="font-weight: 700; color: #a5b4fc; margin-bottom: 0.5rem;">🧠 Agentic RAG Context Flow</div>
-        <div class="progress-step">🟢 <b>Phase 1:</b> Intent analyzed.</div>
-        <div class="progress-step">🔵 <b>Phase 2:</b> Querying semantic retriever catalog (top-k bounds)...</div>
-        <div class="progress-step" style="opacity: 0.4;">⚪ <b>Phase 3:</b> Generating grounded assessment shortlist...</div>
+        <div style="font-weight: 700; color: #a5b4fc; margin-bottom: 0.5rem;">Agentic RAG Context Flow</div>
+        <div class="progress-step"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#22c55e"/></svg> <b>Phase 1:</b> Intent analyzed.</div>
+        <div class="progress-step"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#3b82f6"/></svg> <b>Phase 2:</b> Querying semantic retriever catalog (top-k bounds)...</div>
+        <div class="progress-step" style="opacity: 0.4;"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#64748b"/></svg> <b>Phase 3:</b> Generating grounded assessment shortlist...</div>
     </div>
     """, unsafe_allow_html=True)
     time.sleep(0.5)
@@ -236,10 +240,10 @@ def run_agent_with_progress(api_messages):
     # Step 3 Animation
     progress_placeholder.markdown("""
     <div class="progress-pipeline">
-        <div style="font-weight: 700; color: #a5b4fc; margin-bottom: 0.5rem;">🧠 Agentic RAG Context Flow</div>
-        <div class="progress-step">🟢 <b>Phase 1:</b> Intent analyzed.</div>
-        <div class="progress-step">🟢 <b>Phase 2:</b> FAISS catalog matching completed.</div>
-        <div class="progress-step">🔵 <b>Phase 3:</b> Grounding outputs and generating final synthesis...</div>
+        <div style="font-weight: 700; color: #a5b4fc; margin-bottom: 0.5rem;">Agentic RAG Context Flow</div>
+        <div class="progress-step"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#22c55e"/></svg> <b>Phase 1:</b> Intent analyzed.</div>
+        <div class="progress-step"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#22c55e"/></svg> <b>Phase 2:</b> FAISS catalog matching completed.</div>
+        <div class="progress-step"><svg width="8" height="8" style="vertical-align: middle; margin-right: 4px;"><circle cx="4" cy="4" r="4" fill="#3b82f6"/></svg> <b>Phase 3:</b> Grounding outputs and generating final synthesis...</div>
     </div>
     """, unsafe_allow_html=True)
     time.sleep(0.4)
@@ -293,7 +297,7 @@ for msg in st.session_state.messages:
                     card_html = f"""
                     <div class="assessment-card">
                         <span class="assessment-badge">Type: {rec['test_type']}</span>
-                        <a href="{rec['url']}" target="_blank" class="assessment-title">🔗 {rec['name']}</a>
+                        <a href="{rec['url']}" target="_blank" class="assessment-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px; margin-bottom: 2px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>{rec['name']}</a>
                         <p style="font-size: 0.82rem; color: #94a3b8; margin-top: 0.5rem; line-height: 1.4;">Official catalog details and specifications.</p>
                     </div>
                     """
